@@ -1,0 +1,22 @@
+Project 1
+
+Given 'nand' gate, built the following gates in HDL (hardware description language):
+
+1. Not
+2. And
+3. Or
+4. Xor
+5. Mux
+6. Dmux
+7. Not16
+8. And16
+9. Or16
+10. Mux16
+11. Or8Way
+12. Mux4Way16
+13. Mux8Way16
+14. DMux4Way
+15. DMux8Way
+
+These are commonly used gates and they comprise all the elementary logic gates
+needed to build our computer, the so-called 'hackOS'.

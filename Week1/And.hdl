@@ -1,0 +1,23 @@
+/*
+ * And.hdl --- 'And' chip/gate logic using Nand.
+ * And returns 1 when both inputs are 1, else 0.
+ * Truth table:
+ * a  b  out
+ * 0  0  0
+ * 1  0  0
+ * 0  1  0
+ * 1  1  1
+ *
+ * C.D. MacEachern
+ */
+
+CHIP And {
+  IN a,b;
+  OUT out;
+
+  PARTS:
+    Nand(a=a,b=b,out=nandout);
+    // Not(in=nandout,out=out); earlier implementation
+    // replaced with Nand below
+    Nand(a=nandout,b=nandout,out=out);
+}

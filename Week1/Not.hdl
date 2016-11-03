@@ -1,0 +1,39 @@
+/*
+ * Not.hdl --- 'Not' chip/gate implementation
+ * We are given 'NAND' chip as fully implemented
+ * to use.
+ *
+ * Nand truth table:
+ * a  b  out
+ * 1  0  1
+ * 0  0  1
+ * 0  1  1
+ * 1  1  0
+ *
+ * Equal to saying "if a !== b return 1 else return 0"
+ * Nand can used to replace And, Not, and Or gates:
+ *
+ * And using Nand:
+ * (x And y) == Not(x Nand y)
+ *
+ * Replacing Not with Nand:
+ * Not(x) == (x Nand x)
+ *
+ * So all together:
+ * (x And y) == Not(x Nand y) =>
+ *   ((x Nand y) Nand (x Nand y))
+ *
+ * Or can be replace with And and Not used in
+ * conjunction, so then you'd just replace those
+ * with Nand gates.
+ *
+ * C.D. MacEachern
+ */
+
+CHIP Not {
+  IN in;
+  OUT out;
+
+  PARTS:
+    Nand(a=in, b=in, out=out);
+}
