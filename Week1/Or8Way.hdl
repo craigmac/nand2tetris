@@ -1,0 +1,28 @@
+/*
+ * Or8Way.hdl --- 8 way Or gate implementation.
+ *
+ * An N-way Or gate outputs 1 when at least one of its
+ * N bit inputs is 1, and 0 otherwise. We walk through
+ * the indexes of the input value and Or each pair, and
+ * short circuit the process when one of the bits are 1.
+ *
+ * Function: out=Or(in[0], in[1],...in[N])
+ * C.D. MacEachern
+ */
+
+CHIP Or8Way {
+  IN in[8];
+  OUT out;
+
+  PARTS:
+    // Compare first two bits and output used
+    // to check against next bit in put, all the
+    // way through until the end.
+    Or(a=in[0], b=in[1], out=out0);
+    Or(a=out0, b=in[2], out=out1);
+    Or(a=out1, b=in[3], out=out2);
+    Or(a=out2, b=in[4], out=out3);
+    Or(a=out3, b=in[5], out=out4);
+    Or(a=out4, b=in[6], out=out5);
+    Or(a=out5, b=in[7], out=out);
+}

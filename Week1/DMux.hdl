@@ -1,0 +1,20 @@
+/*
+ * DMux.hdl -- Dmux implementation for 1 bit bus.
+ * Opposite of mux operation, Dmux take a single
+ * signal and sends it on to two channels depending
+ * on the 'sel' flag. Two inputs, two outputs.
+ *
+ * Function: if sel=0 then {a=in,b=0} else {a=0, b=in}
+ *
+ * C.D MacEachern
+ */
+
+CHIP DMux {
+  IN in, sel;
+  OUT a,b;
+
+  PARTS:
+    Not(in=sel, out=notsel);
+    And(a=in, b=notsel, out={a=in,b=0});
+    And(a=in, b=sel, out={a=0,b=in});
+}

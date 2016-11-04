@@ -1,5 +1,18 @@
 # nand2tetris.org course files and answers
 
+## Course details
+
+Beginning from primitive boolean functions and given a Nand
+chip, you build a simulation of the 15 most common gates such as
+And, Not, Or, Xor, Mux, Dmux and their 16-bit variants. You describe
+the input and output buses of these gates as well as their functionality
+in a language called HDL (Hardware Definition Language). You then test
+your implementation of these primitive gates against known working
+implementations in a special purpose hardware simulator given to you.
+
+With the basic building blocks working, you begin building the ALU,
+CPU, and RAM chips out of these gates.
+
 ## How to setup manually
 
 Clone the repo.
