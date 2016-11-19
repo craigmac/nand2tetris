@@ -160,3 +160,10 @@ What's nice about that is that 11 decimal when we convert that back
 to 2s complement, we get the right answer: -5!
 
 So we can use the same chips to do negative addition for free.
+
+## ALU (Arithmetic Logic Unit)
+Using 2 inputs, and a third input which is the flag to set which
+function to use on the inputs, e.g., mulitplication, addition,
+subtraction, bitwise and/or, etc.
+
+

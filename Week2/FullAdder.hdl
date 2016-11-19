@@ -13,7 +13,8 @@
  * 1	     1	   1	1   1
  *
  * carry == 1 if:
- * 
+ *
+ * C.D. MacEachern
  */
 
 CHIP FullAdder {
