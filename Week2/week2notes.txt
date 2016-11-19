@@ -1,0 +1,162 @@
+Week 2 of nand2tetris.org course
+
+Table of Contents
+Unit 2.1 Binary Numbers
+Unit 2.2 Binary Addition
+Unit 2.3 Negative Numbers
+Unit 2.4 Arithmetic Logic Unit (ALU)
+Unit 2.5 Project 2 Overview
+Unit 2.6 Perspectives
+
+
+# Unit 2.1 Binary Numbers
+Binary Decimal
+0      0
+1      1
+10     2
+11     3
+100    4
+101    5
+...    ...
+
+Decimal ("Base-10" system)
+'789' really means:
+Right most digit, 9 is 1s
+second is 10s, 8
+third is 100s, 7
+
+7x100 + 8x10 + 9x1
+
+Or you could represent as powers of 10 (where we get 'base-10' name from)
+and each position further to the left increments the n portion of 10^n,
+starting from 10^0, then 10^1, 10^2, etc.:
+
+7x10^2 + 8x10^1 + 9x10^0 = 700 + 80 + 9 = 789 
+
+Binary ("Base-2" system)
+Each position is an increasing power of 2, first position being to power of 0
+(just itself, either 0 or 1) and each left one after that is doubled starting
+with 2.
+'101' in binary:
+Right most digit '1' to power of 0 = 1
+0 to power of 2 = 0
+1 to power of 4 = 4
+So:
+1x2^2 + 0x2^1 + 1x2^0 = 4 + 0 + 1 = 5 in decimal
+
+Or we could just give each position and increasing doubling value of 2,
+starting from 1:
+
+Binary:			      1     0    0	1
+Position multiplier:	      8     4    2      1
+
+This is exactly the same as doing it the 2^n way, just a bit easier
+in my mind for smaller numbers. If the binary number is longer it may
+be easier to do the 2^n way because it would be difficult without
+a calculator to keep doubling in your mind the positional multiplier
+and keeping track of it all.
+
+* Fixed word sizes:
+  * 8 bits can range from:
+  lowest at 0000 0000
+  to 1111 1111
+  which can be -126 to 127 if using signed (furthest most bit being the negative sign flag)
+
+## Converting Decimal to Binary
+
+Decimal '87'
+1. What is the largest power of 2 that fits into 87? -> 64
+2. What is the next power of 2 of 64 that we can add to it and still be under 87? 16
+3. and so on
+4. 64 + 16 + 4 + 2 + 1
+5. Now we put a '1' in each power of 2 position that represents the numbers we have (e.g. 64):
+0      1  0   1  0   1	    1   1 (Binary representation of 87 decimal)
+128    64 32  16 8   4	    2	1
+
+Quiz:
+Binary representation of 99?
+64 + 32 + 2 + 1
+0110 0011
+
+## Unit 2.2 Binary Addition
+
+0001 0101
+0101 1100 +
+-----------
+?
+
+We do 'carry' like we do with decimal, but a bit differently:
+If we carry to a spot with two 1, like:
+
+  
+0011
+0011 +
+----
+0110
+
+If the next addition equals 3, we put down a 1 and carry a 1
+again. If we have a 1 + 1, we put down a 0 and do a carry of 1.
+
+Quiz:
+
+0111 1101
+0011 0110 +
+-----------
+1011 0011
+
+### Addition overflow
+
+If the two left most bits were 1, we end up with a carry that has no place!
+In most cpus, we would just ignore the carry bit and the have special routines
+to deal with that.
+
+
+## Negative numbers
+
+* we represent negatives in binary by using a system
+called 'two's complement' where the leftmost bit will be a flag, if 1 then we
+read the binary number as a negative, otherwise it is a positive number.
+Therefore we have only 0111 max positive, aka 7 in decimal (0-7) and 1000
+to 1111 is (-8 to -1), which would be (8 to 15 decimal if we weren't using)
+the leftmost bit as the negative flag (i.e., unsigned).
+
+Binary Decimal
+0000   0
+0001   1
+...    ...
+0111   7
+1000   -8 (8 if we were reading it as positive, but leftmost bit here flags it as negative)
+1001   -7 (9)
+1010   -6 (10)
+1011   -5 (11)
+1100   -4 (12)
+1101   -3 (13)
+1110   -2 (14)
+1111   -1 (15)
+
+
+In this system we represnt the number "-X" using the positive number:
+2^n - X
+
+## Negative addition in 2s complement system
+-2
+-3 +
+---
+
+Is the same in this system as:
+14
+13 +
+
+(see above table for why)
+
+If we were to binary add these as:
+1110
+1101
+
+We get a throw away carry and end up with:
+1011 which in decimal is 11.
+
+What's nice about that is that 11 decimal when we convert that back
+to 2s complement, we get the right answer: -5!
+
+So we can use the same chips to do negative addition for free.
