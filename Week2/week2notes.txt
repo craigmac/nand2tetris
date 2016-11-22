@@ -162,8 +162,76 @@ to 2s complement, we get the right answer: -5!
 So we can use the same chips to do negative addition for free.
 
 ## ALU (Arithmetic Logic Unit)
-Using 2 inputs, and a third input which is the flag to set which
+* Using 2 inputs, and a third input which is the flag to set which
 function to use on the inputs, e.g., mulitplication, addition,
 subtraction, bitwise and/or, etc.
+* Our ALU is called the 'Hack ALU'
+* two 16 bit inputs, x and y
+* one 16 bit out, called 'out'
+* 6 control bits: zx, nx, zy, ny, f, no
+* control bits control which 1 of 18 functions to run on inputs
+* some functions are just constants like outputting 0, 1
+* zr and ng control bits separate from the other 6 control bits
+
+## ALU truth table:
+zx nx zy ny f no out
+1  0  1	 0  1 0	 0
+1  1  1	 1  1 1	 1
+1  1  1	 0  1 1	 -1
+0  0  1	 1  0 0	 x
+1  1  0	 0  0 0	 y
+0  0  1	 1  0 1	 !x
+1  1  0	 0  0 1	 !y
+0  0  1	 1  1 1	 -x
+1  1  0	 0  1 1	 -y
+0  1  1	 1  1 1	 x+1
+1  1  0	 1  1 1	 y+1
+0  0  1	 1  1 0	 x-1
+1  1  0	 0  1 0	 y-1
+0  0  0	 0  1 0  x+y
+0  1  0	 0  1 1	 x-y
+0  0  0	 1  1 1	 y-x
+0  0  0	 0  0 0	 x&y
+0  1  0	 1  0 1	 x|y
+
+### zx and nx control bits
+* first two control bits have to do with x input:
+  * if zx then x=0 (read as 'zero 0 if this enabled')
+  * if nx then !x (read as 'flip x if this enabled')
+  * if you had both zx and nx flags on, then we'd first 0 out all of x and then
+  flip it, so x would be all 1 (16 1s)
+  
+### zy and ny control bits
+* do the same thing for y input as zx and nx did for x
+
+### f control bit
+* if f then out=x+y else out=x&y (controls addition versus bitwise and'ing the inputs)
+
+### 'no' control bit
+* this controls the output:
+  * if 'no' then out=!out (negates it) else leave as is
+
+Quiz:
+What output would the following control bits give us?
+zx=1,nx=0,zy=1,ny=1,f=1,no=1
+Answer:
+16 0s (assuming x and y input is 16 bits here)
+
+Because we negate anything in x with zx and do the same with y and then flip y and
+bitwise it with x, giving us all 1s and then do addition on it, just giving us 1s again,
+and then bitwise negation on it to give us all 0s.
+
+
+### the output control bits zr and ng
+
+* their role is to say something about the main output denoted out
+* if out == 0 then zr == 1 else zr == 0
+* if out < 0 then ng ==1 else ng == 0
+* why we need these will become clear in later units
+
+
+
+
+
 
 
