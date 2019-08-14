@@ -1,0 +1,25 @@
+/* RAM16K.hdl - A RAM chip with 16000 16-bit Registers,
+ * giving a total of 256000 (256kb) of addressable memory. (Ought
+ * to be enough for anybody....)
+ *
+ * C.D. MacEachern
+ */
+
+CHIP RAM16K {
+   IN in[16], load, address[15];
+   OUT out[16];
+
+   PARTS:
+   DMux8Way(in=load, sel=address[12..14], a=dmuxa, b=dmuxb, c=dmuxc, d=dmuxd,
+            e=dmuxe, f=dmuxf, g=dmuxg, h=dmuxh);
+   RAM4K(in=in, load=dmuxa, address=address[0..11], out=outRamA);
+   RAM4K(in=in, load=dmuxb, address=address[0..11], out=outRamB);
+   RAM4K(in=in, load=dmuxc, address=address[0..11], out=outRamC);
+   RAM4K(in=in, load=dmuxd, address=address[0..11], out=outRamD);
+   RAM4K(in=in, load=dmuxe, address=address[0..11], out=outRamE);
+   RAM4K(in=in, load=dmuxf, address=address[0..11], out=outRamF);
+   RAM4K(in=in, load=dmuxg, address=address[0..11], out=outRamG);
+   RAM4K(in=in, load=dmuxh, address=address[0..11], out=outRamH);
+   Mux8Way16(a=outRamA, b=outRamB, c=outRamC, d=outRamD, e=outRamE,
+             f=outRamF, g=outRamG, h=outRamH, sel=address[12..14], out=out);
+}

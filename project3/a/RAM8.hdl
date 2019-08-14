@@ -1,0 +1,26 @@
+/* RAM8.hdl - A RAM chip made up of 8 registers
+ * n=8 and k=3 which means 8 Registers (n) and
+ * 3 bit width (k), meaning we need 3 bits to
+ * uniquely address each Register. 3 bits are required to
+ * address Register number 0 through Register number 9.
+ */
+
+CHIP RAM8 {
+    // If load is 1, store in in Register number N specified by 'address'
+    IN in[16], load, address[3];
+    OUT out[16];
+
+    PARTS:
+    DMux8Way(in=load, sel=address, a=a, b=b, c=c, d=d, e=e, f=f, g=g, h=h);
+    Register(in=in, load=a, out=r1out);
+    Register(in=in, load=b, out=r2out);
+    Register(in=in, load=c, out=r3out);
+    Register(in=in, load=d, out=r4out);
+    Register(in=in, load=e, out=r5out);
+    Register(in=in, load=f, out=r6out);
+    Register(in=in, load=g, out=r7out);
+    Register(in=in, load=h, out=r8out);
+    Mux8Way16(a=r1out, b=r2out, c=r3out, d=r4out, e=r5out, f=r6out, g=r7out,
+              h=r8out, sel=address, out=out);
+ }
+

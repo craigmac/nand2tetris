@@ -1,0 +1,29 @@
+/* RAM64.hdl - Implementation of RAM with 64 registers,
+ * each one having 16-bit width to make 1024-bit RAM
+ * chip (aka 1kb)
+ *
+ * C.D. MacEachern
+ *
+ * For RAM64 and up we start using the address bus as a two-field binary
+ * number, the bottom three bits [0..2] to select which Register in the
+ * RAM8 to target, and the high three bits [3..5] selects which RAM8 to target
+ */
+
+CHIP RAM64 {
+   IN in[16], load, address[6];
+   OUT out[16];
+
+   PARTS:
+   DMux8Way(in=load, sel=address[3..5], a=dmuxa, b=dmuxb, c=dmuxc, d=dmuxd,
+            e=dmuxe, f=dmuxf, g=dmuxg, h=dmuxh);
+   RAM8(in=in, load=dmuxa, address=address[0..2], out=outRamA);
+   RAM8(in=in, load=dmuxb, address=address[0..2], out=outRamB);
+   RAM8(in=in, load=dmuxc, address=address[0..2], out=outRamC);
+   RAM8(in=in, load=dmuxd, address=address[0..2], out=outRamD);
+   RAM8(in=in, load=dmuxe, address=address[0..2], out=outRamE);
+   RAM8(in=in, load=dmuxf, address=address[0..2], out=outRamF);
+   RAM8(in=in, load=dmuxg, address=address[0..2], out=outRamG);
+   RAM8(in=in, load=dmuxh, address=address[0..2], out=outRamH);
+   Mux8Way16(a=outRamA, b=outRamB, c=outRamC, d=outRamD, e=outRamE,
+             f=outRamF, g=outRamG, h=outRamH, sel=address[3..5], out=out);
+}

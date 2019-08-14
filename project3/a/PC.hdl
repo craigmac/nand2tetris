@@ -1,0 +1,45 @@
+/* PC.hdl - program counter chip implementation
+ *
+ * Logic:
+ * 't' here meaning current time and t+1 meaning next
+ * clock cycle.
+ *
+ * if (reset[t]==1) then out[t+1] = 0
+ *    else if (load[t]==1) then out[t+1] = in[t]
+ *       else if (inc[t]==1) the out[t+1] = out[t]+1
+ *          else out[t+1] = out[t]
+ */
+
+ CHIP PC {
+    // 'inc' means to increment by 1, 'reset' is flag to return count to 0,
+    // regardless of any other flags set, so that is considered first. If load
+    // is set then the out will be the value of in, and if inc is set then
+    // out will be value of out at begining of clock cycle, [t] plus 1.
+    // Otherwise, we just output at clock tock (end) what was there at clock
+    // tick (beginning state).
+    IN in[16], load, inc, reset;
+    OUT out[16];
+/*
+ * if reset then out = 0;
+ * else if load then out = in;
+ * else if inc then out = out[t] + 1;
+ * else out = out;
+ */
+    PARTS:
+    // Add 1 to output of Register on loopback
+    Inc16(in=regOut, out=regOutPlus1);
+    // Using inc flag we select either the old value (inc=0) or we output
+    // ther result of Inc16, which is old value, regOut, plus 1
+    Mux16(a=regOut, b=regOutPlus1, sel=inc, out=oldValueOrOldPlus1);
+    // Select whether to store the old value or the in value or not with 'load'
+    // flag. The 'old value' may also have been incrementing by 1 as the
+    // a line in notes 'oldValueOrOldPlus1'.
+    Mux16(a=oldValueOrOldPlus1, b=in, sel=load, out=inOrOldValue);
+    // Select whether to reset (set all bits to 0) or not. If reset flag set
+    // then we output b, false, which is a constant for 16 zeros.
+    Mux16(a=inOrOldValue, b=false, sel=reset, out=falseOrinOrOldValue);
+    // Final chip is Register, which has a split out that loops back to Inc16
+    // and Mux16, load is always true because that is the point of the PC, to
+    // keep track of previous value and increment it, so we use constant true
+    Register(in=falseOrinOrOldValue, load=true, out=out, out=regOut);
+ }

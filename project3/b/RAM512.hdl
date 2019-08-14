@@ -1,0 +1,27 @@
+/* RAM512.hdl - A RAM chip with 512 16-bit Registers,
+ * giving a total of 8192 bits (8kb).
+ *
+ * This one simply builds on the RAM64, see that hdl file for implementation
+ * details. Simply a few more address bits added.
+ *
+ * C.D. MacEachern
+ */
+
+CHIP RAM512 {
+   IN in[16], load, address[9];
+   OUT out[16];
+
+   PARTS:
+   DMux8Way(in=load, sel=address[6..8], a=dmuxa, b=dmuxb, c=dmuxc, d=dmuxd,
+            e=dmuxe, f=dmuxf, g=dmuxg, h=dmuxh);
+   RAM64(in=in, load=dmuxa, address=address[0..5], out=outRamA);
+   RAM64(in=in, load=dmuxb, address=address[0..5], out=outRamB);
+   RAM64(in=in, load=dmuxc, address=address[0..5], out=outRamC);
+   RAM64(in=in, load=dmuxd, address=address[0..5], out=outRamD);
+   RAM64(in=in, load=dmuxe, address=address[0..5], out=outRamE);
+   RAM64(in=in, load=dmuxf, address=address[0..5], out=outRamF);
+   RAM64(in=in, load=dmuxg, address=address[0..5], out=outRamG);
+   RAM64(in=in, load=dmuxh, address=address[0..5], out=outRamH);
+   Mux8Way16(a=outRamA, b=outRamB, c=outRamC, d=outRamD, e=outRamE,
+             f=outRamF, g=outRamG, h=outRamH, sel=address[6..8], out=out);
+}

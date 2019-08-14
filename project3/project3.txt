@@ -1,0 +1,45 @@
+Project 3:
+Given:
+ - all previous chips built in project 1 and 2
+ - Data Flip-Flop (DFF gate)
+
+Goal: Build the following
+ - Bit (done)
+ - Register (done)
+ - RAM8
+ - RAM64
+ - RAM512
+ - RAM4K
+ - RAM16K
+ - PC
+
+Hints/Guidelines:
+
+RAM8: if load {
+            M = in
+            // from next cycle onward
+            out = M
+            }
+      else out = M
+
+Tip:
+ * Feed in value to all registers simultaneously
+ * Use mux/dmux chips to select right register
+
+RAM64:
+    * use RAM8 already built, stack 8 RAM8 chips together, think about address
+    input as a binary value that consists of two fields:
+        1. One field to select a RAM-part
+        2. Other field used to select a register within that RAM-part
+    High/low part of byte maybe?
+    * use mux/dmux logic to effect this addressing scheme
+
+RAM512:
+    * use 8 RAM64 chips
+
+RAM4K, RAM16K:
+    * same thing as above
+
+PC:
+    * Can be built with Register chip, and incrementor chip and some logic
+      gates.

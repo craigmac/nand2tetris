@@ -1,0 +1,23 @@
+CHIP Test {
+   IN a[16], b[16];
+   OUT out[16];
+
+   PARTS:
+   And(a=a[0], b=b[0], out=out[0]);
+   And(a=a[1], b=b[0], out=out[0]);
+   And(a=a[2], b=b[0], out=out[0]);
+   And(a=a[3], b=b[0], out=out[0]);
+   And(a=a[4], b=b[0], out=out[0]);
+   And(a=a[5], b=b[0], out=out[0]);
+   And(a=a[6], b=b[0], out=out[0]);
+   And(a=a[7], b=b[0], out=out[0]);
+   And(a=a[8], b=b[0], out=out[0]);
+   And(a=a[9], b=b[0], out=out[0]);
+   And(a=a[10], b=b[0], out=out[0]);
+   And(a=a[11], b=b[0], out=out[0]);
+   And(a=a[12], b=b[0], out=out[0]);
+   And(a=a[13], b=b[0], out=out[0]);
+   And(a=a[14], b=b[0], out=out[0]);
+   And(a=a[15], b=b[0], out=out[0]);
+
+}
