@@ -411,8 +411,300 @@ Hack is case-sensitive!
 
 This unit: branching, variables, and iteration
 
+### Branching
+
+Done using goto, basically
+
+```
+// Computes: if R0 > 0
+//              R1=1
+//           else
+//              R1=0
+@R0
+D=M // set D to whatever value is in R0 (not the address)
+
+@8      // select location we'd like to jump to in next instruction
+D;JGT   // this says if D is greater than 0 goto 8 (8th instruction)
+
+@R1     // else path, set R1=0 and jump to end of program which loops forever
+M=0     // set R1 value to 0 aka RAM[1]=0
+@10
+0;JMP   // end of program
+
+@R1     // goto 8 lands here, 8th line of code, ignoring whitespace; 0-indexed
+M=1     // set R1 value to 1, this is the if R0>0 then R1=1 part
+
+@10
+0;JMP   // end of file infinite loop
+```
+
+Labels:
+To make jumping much more clear, we can instead use symbolic labels that are
+translated from @LABEL to @n, where n is the instruction number following
+the '(LABEL)' declaration
+
+```
+[...]
+
+@POSITIVE // using a label, just like saying @8
+D;JGT
+
+[...]
+
+(POSITIVE) // label declaration for this position (i.e., @8)
+@R1 // label declarations are not translated, this is the actual @8
+M=1
+
+(END) // declare below instruction to be a label that we can target
+@END  // select self basically
+0;JMP // unconditional jump to @END--infinite loop
+```
+
+### Variables
+
+In Hack only 16-bit values to worry about, 1 single Register can be
+used to represent a variable.
+
+```
+//flip.asm
+/* flips values of RAM[0] and RAM[1]
+ * temp = R1
+ * R1 = R0
+ * R0 = temp
+ */
+
+@R1
+D=M
+@temp // declare variable named 'temp'
+M=D // temp=R1
+
+@R0
+D=M
+@R1
+M=D // R1=R0
+
+@temp
+D=M
+@R0
+M=D // R0=temp
+
+(END)
+@END
+0;JMP
+```
+@temp here means: "find some available memory register (say register n),
+and use it to represent the variable 'temp'. So from now on, each time
+we see @temp in the program, translate it into @n.
+
+Translation process honours this contract:
+"A reference to a symbol that has no corresponding label declaration, e.g.
+(MYLABEL) is treated as a reference to a variable. Variables are allocated
+to the RAM from address 16 onward."
+
+### Iterative Processing
+
+Example: 1 + 2 + 3 + ... + n
+
+pseudo code:
+LOOP:
+    if i > n goto STOP
+    sum = sum + i
+    i = i + i
+    goto LOOP
+STOP:
+    R1 = sum
+
+```
+// Sum1toN.asm
+
+@R0 // select register 0
+D=M // set data register to value of R0
+@n  // create & select variable 'n'
+M=D // n = R0
+@i  // create & select variable 'i'
+M=1 // variable i = 1
+@sum // create & select variable 'sum'
+M=0 // sum = 0
+
+(LOOP) // label declaration, can now be targeted with @LOOP
+    @i // select variable 'i'
+    D=M // set d register to value in 'i'
+    @n // select variable 'n'
+    D=D-M // decrement current value of 'i' by value in 'n' variable
+    @STOP // select label STOP to jump to on result of next instruction
+    D;JGT // if i > n goto STOP
+
+    @sum
+    D=M
+    @i
+    D=D+M
+    @sum
+    M=D // sum=sum+i
+    @i
+    M=M+1 // i=i+1
+    @LOOP
+    0;JMP // unconditionally jump to (LOOP) again
+
+(STOP)
+    @sum
+    D=M
+    @R1
+    @R1
+    M=D // RAM[1]=sum
+
+(END)
+    @END
+    0;JMP
+
+```
 ## Unit 4.8: Hack Programming Part 3
 
+Pointers and I/O
+
+### Pointers and I/O devices
+
+The notion of arrays to the compiler is just a segment of memory, with a
+base address and a length given.
+
+Variables that store memory addresses, like arr and i, are called
+pointers.
+
+Hack language pointer logic: whenever we have to access memory using
+a pointer, we need an instruction like A=M.
+
+Typical pointer semantics:
+"Set the address register to the contents of some memory register."
+
+How to set and array of 10 elements to -1:
+```
+// suppose that arr=100 and n=10
+// compiler will set arr = register 16, n to register 17, and i to reg. 18,
+// because contract is that it will start assigning @variables at register
+// 16+.
+@100 // arr = 100
+D=A // save 100 to data register
+@arr
+M=D // set variable arr to value 100
+
+// n=10 part
+@10
+D=A // save as constant 10 in data register
+@n
+M=D // n=10
+
+// now loop part starts (for i=0; i<n; i++; arr[i] = -1)
+@i
+M=0
+
+(LOOP)
+    // if i==n goto END
+    @i
+    D=M
+    @n
+    D=D-M
+    @END
+    D;JEQ // jump to END if D is equal to 0 (aka i-n is 0, equal!)
+
+    // RAM[arr+i] = -1 part, use base address of RAM[arr] and add
+    // offset of i to it and set that address value to -1
+    @arr
+    D=M
+    @i
+    A=D+M // Use A reg. to store value of arr + value of i, which is RAM[arr+i]
+    M=-1 // set this address, RAM[A], which was set to point to RAM[arr+i],
+        // to constant value -1
+
+    // i++
+    @i
+    M=M+1
+    @LOOP
+    0;JMP
+
+(END)
+    @END
+    0;JMP
+```
+
+### I/O
+
+Hack RAM:
+0-16383: data memory (16k)
+16384-24575: Screen mmap (8k)
+24,576: Keyboard mmap (single register)
+
+Drawing a rectangle pseudo code:
+Screen top-left starts at mmap value 16384
+
+```
+n = rows given by user
+for (i=0; i <n; i++) {
+    draw 16 black pixels at the beginning of row i
+    }
+
+addr = SCREEN // base address
+n = RAM[0] // save value
+i = 0 // iteration count
+
+as long as i has not reach n, set ram address to -1 (all 1s, black),
+and then advance to next row by adding 32 (size of a row).
+
+pseudo code:
+LOOP:
+    if i > n goto END
+    RAM[addr] = -1
+    // next row, each row is 32 Words remember (32x16bits = 512 pixels)
+    addr = addr + 32
+    i = i + 1
+    goto LOOP
+END:
+    goto END
+
+
+```
+
+### Handling the keyboard
+
+keycodes storing in 24576 register.
+
+Read contents of RAM[24576] which has predefined label @KBD
+
+```
+@KBD
+D=M // Save keycode value, if 0 no key is pressed
+```
+
 ## Unit 4.9: Project 4 Overview
+
+Tasks:
+* Write a simple algebraic program
+* Write a simple interactive program
+
+### 1st Program: Mult
+
+Mult performs R2 = R0 * R1
+
+So if user sets RAM[0] to 6 and RAM[1] to 7, RAM[2] after running mult.asm
+will be 42.
+
+### 2nd Program: Fill
+
+Listen to keyboard, and as long as no key pressed nothing happens,
+it any key pressed, screen is fully blackened, when key lifted (no
+keycode) screen becomes white again. Infinite loop listening to keyboard
+and responding.
+
+Addressing the memory requires working with pointers. Loop with pointers to
+address every memory address in the screen mmap.
+
+Testing:
+select "no animation"
+test it manual by pressing/unpressing keys
+
+### Program development process
+
+1.Write out pseudo code.
+1.Write/edit the program using text editor translating pseudo code into
+Hack assembly.
+1.Load file into cpu emulator and run it.
 
 ## Unit 4.10: Perspectives
