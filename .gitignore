@@ -1,1 +1,8 @@
 nand2tetris/
+GPATH
+GRTAGS
+GTAGS
+__pycache__
+*.pyc
+*.pyo
+.clangd
