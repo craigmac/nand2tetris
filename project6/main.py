@@ -95,12 +95,13 @@ def first_pass(lines: list):
             SYMBOLS[key] = idx
         else:
             idx += 1
-
     pprint(SYMBOLS)
 
 def second_pass(lines: list):
     """Converts each line in the `lines` input into the equivalent
-    Hack binary machine opcode and write it to file.
+    Hack binary machine opcode and write it to file. Skip processing
+    lines that are symbolic labels e.g., (OUTPUT_FIRST) because we already
+    did that in first pass.
     """
     fname = sys.argv[1]
     end = fname.index('.asm')
@@ -109,9 +110,10 @@ def second_pass(lines: list):
     try:
         with open(fout, 'w') as fd:
             for line in lines:
-                instruction = ''
+                if line[0] == '(':
+                    continue  # skip and goto next iteration
                 # A-instructions: '@2' '@FOOBAR'
-                if line.startswith(('@', '(')):
+                elif line[0] == '@':
                     instruction = translate_a_instruction(line)
                 # C-instructions: 'D=M' 'D=M+1' 'A=D-1;JGT', etc.
                 else:
@@ -123,7 +125,7 @@ def second_pass(lines: list):
 
 def translate_a_instruction(line: str) -> str:
     """Return a Hack machine language instruction in string format."""
-    print('Current A-instruction line:' + line)
+    global next_free_memaddr
     instruction = ''
     # 1. case: first character of line is '@'
     if line[0] == '@':
@@ -162,7 +164,7 @@ def translate_a_instruction(line: str) -> str:
         raise SyntaxError('Error: First character of line could not be parsed.')
         sys.exit(1)
 
-    print('Returning instruction string: ' + instruction)
+    print('A-instruction conversion: {} \t\t {}'.format(line, instruction))
     return instruction
 
 def translate_c_instruction(line: str) -> str:
@@ -221,6 +223,8 @@ def translate_c_instruction(line: str) -> str:
     instruction += cbits # 7 bits
     instruction += dbits # 3 bits
     instruction += jbits # 3 bits
+
+    print('C-instruction conversion: {} \t\t {}'.format(line, instruction))
     return instruction
 
 def main():
@@ -229,23 +233,15 @@ def main():
         for line in lines:
             if line.startswith(('/', '*', '\n')) or not line:
                 continue
-            res.append(line)
+            squeezed = line.replace(' ','')
+            trailing_comment_rm = squeezed.partition('/')[0]
+            res.append(trailing_comment_rm)
 
     # Remove left and right whitespace
     stripped_lines = [i.strip() for i in res]
-    # Remove spaces so indexing is accurate
-    squeezed_lines = [i.replace(' ','') for i in stripped_lines]
 
-    sanitized_lines = []
-    for line in squeezed_lines:
-        try:
-            end = line.index('/')
-        except ValueError:
-            end = None
-        sanitized_lines.append(line[:end])
-
-    first_pass(sanitized_lines)
-    second_pass(sanitized_lines)
+    first_pass(stripped_lines)
+    second_pass(stripped_lines)
 
 
 if __name__ == '__main__':
