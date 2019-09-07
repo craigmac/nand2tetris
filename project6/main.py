@@ -4,7 +4,6 @@ Author: C.D. MacEachern <craigm@fastmail.com>
 """
 
 import sys
-from pprint import pprint
 
 SYMBOLS = {
         'R0':  0,
@@ -78,15 +77,13 @@ COMP_BITS = {
     'M-D': '1000111',
     'D&M': '1000000',
     'D|M': '1010101',}
-next_free_memaddr = 16
+FREEMEM = 16
 
 def first_pass(lines: list):
     """For each instruction of the form "(xxx)": do 1. Add the
     pair (xxx: address) to the symbol table, where address is the
     number of the instruction following (xxx), i.e., next line.
     """
-    print("First pass lines:")
-    pprint(lines)
     idx = 0
     for line in lines:
         if line[0] == '(':
@@ -95,7 +92,6 @@ def first_pass(lines: list):
             SYMBOLS[key] = idx
         else:
             idx += 1
-    pprint(SYMBOLS)
 
 def second_pass(lines: list):
     """Converts each line in the `lines` input into the equivalent
@@ -125,7 +121,7 @@ def second_pass(lines: list):
 
 def translate_a_instruction(line: str) -> str:
     """Return a Hack machine language instruction in string format."""
-    global next_free_memaddr
+    global FREEMEM
     instruction = ''
     # 1. case: first character of line is '@'
     if line[0] == '@':
@@ -138,8 +134,10 @@ def translate_a_instruction(line: str) -> str:
                 instruction = format(value, 'b').zfill(16)
             # not found in table, new variable
             else:
-                SYMBOLS[line[1:]] = next_free_memaddr
-                next_free_memaddr += 1
+                print("Assigning freemem position {} to {}".format(str(FREEMEM), line))
+                SYMBOLS[line[1:]] = FREEMEM
+                value = format(FREEMEM, 'b').zfill(16)
+                FREEMEM += 1
         # 1.b. case: '@0' '@12' '@16384' -- directly translate
         else:
             if line[1] == 'R':  # 1.c case: '@R0...@R15'
