@@ -28,6 +28,7 @@ SYMBOLS = {
         'THIS': 3,
         'THAT': 4,
         'KBD': 24576,
+        'ARG': 2,
         }
 JUMP_BITS = {
         'null': '000',
@@ -125,11 +126,12 @@ def translate_a_instruction(line: str) -> str:
     instruction = ''
     # 1. case: first character of line is '@'
     if line[0] == '@':
-        # 1.a case: @foo or @LOOP
-        if line[1].isalpha() and line[1] != 'R':
+        # @foo, @LOOP, @SP, @THIS, @SCREEN, @R0...@R15, etc.
+        if line[1].isalpha():
             value = SYMBOLS.get(line[1:])
             # found in table, e.g., int 34 returned
-            if value:
+            # GOTCHA: if value from key is 0, just using 'if value' fails!
+            if value is not None:
                 # zfill() left fills string with 0s to pad out to size N
                 instruction = format(value, 'b').zfill(16)
             # not found in table, new variable
@@ -139,13 +141,9 @@ def translate_a_instruction(line: str) -> str:
                 value = FREEMEM
                 FREEMEM += 1
                 instruction = format(value, 'b').zfill(16)
-        # 1.b. case: '@0' '@12' '@16384' -- directly translate
+        # @0 ... @N, e.g. @16384, just directly translate
         else:
-            if line[1] == 'R':  # 1.c case: '@R0...@R15'
-                value = SYMBOLS[line[1:]]
-                print('using @Rn value: ' + str(value))
-            else:
-                value = int(line[1:])  # @16384
+            value = int(line[1:])  # @16384
             instruction = format(value, 'b').zfill(16)
     # 2. case: first character of line is '('
     elif line[0] == '(':
@@ -163,7 +161,7 @@ def translate_a_instruction(line: str) -> str:
         raise SyntaxError('Error: First character of line could not be parsed.')
         sys.exit(1)
 
-    print('A-instruction conversion: {} \t\t {}'.format(line, instruction))
+    # print('A-instruction conversion: {} \t\t {}'.format(line, instruction))
     return instruction
 
 def translate_c_instruction(line: str) -> str:
@@ -223,7 +221,7 @@ def translate_c_instruction(line: str) -> str:
     instruction += dbits # 3 bits
     instruction += jbits # 3 bits
 
-    print('C-instruction conversion: {} \t\t {}'.format(line, instruction))
+    # print('C-instruction conversion: {} \t\t {}'.format(line, instruction))
     return instruction
 
 def main():
