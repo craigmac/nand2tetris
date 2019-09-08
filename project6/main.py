@@ -136,8 +136,9 @@ def translate_a_instruction(line: str) -> str:
             else:
                 print("Assigning freemem position {} to {}".format(str(FREEMEM), line))
                 SYMBOLS[line[1:]] = FREEMEM
-                value = format(FREEMEM, 'b').zfill(16)
+                value = FREEMEM
                 FREEMEM += 1
+                instruction = format(value, 'b').zfill(16)
         # 1.b. case: '@0' '@12' '@16384' -- directly translate
         else:
             if line[1] == 'R':  # 1.c case: '@R0...@R15'
